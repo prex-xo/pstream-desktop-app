@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>P-Stream Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1b1e;
+      color: #e4e4e7;
+      padding: 32px 28px;
+    }
+    h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+    .shortcut-hint { font-size: 12px; color: #52525b; margin-bottom: 28px; }
+    kbd {
+      background: #27272a; border: 1px solid #3f3f46; border-radius: 4px;
+      padding: 1px 6px; font-size: 11px; font-family: monospace; color: #a1a1aa;
+    }
+    label {
+      display: block; font-size: 12px; font-weight: 600; color: #a1a1aa;
+      margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    input[type="text"] {
+      width: 100%; padding: 10px 14px; background: #27272a;
+      border: 1px solid #3f3f46; border-radius: 8px; color: #e4e4e7;
+      font-size: 14px; outline: none; transition: border-color 0.15s;
+    }
+    input[type="text"]:focus { border-color: #6366f1; }
+    .hint { margin-top: 6px; font-size: 12px; color: #71717a; }
+    .presets { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .preset {
+      padding: 4px 10px; background: #27272a; border: 1px solid #3f3f46;
+      border-radius: 6px; font-size: 12px; color: #a1a1aa; cursor: pointer;
+    }
+    .preset:hover { background: #3f3f46; color: #e4e4e7; }
+    .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+    button {
+      padding: 10px 20px; background: #6366f1; color: white; border: none;
+      border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: background 0.15s;
+    }
+    button:hover { background: #4f46e5; }
+    button.secondary { background: #27272a; border: 1px solid #3f3f46; color: #a1a1aa; }
+    button.secondary:hover { background: #3f3f46; color: #e4e4e7; }
+    .status { margin-top: 10px; font-size: 13px; color: #4ade80; min-height: 20px; }
+    .status.error { color: #f87171; }
+    hr { border: none; border-top: 1px solid #27272a; margin: 24px 0; }
+    .toggle-row { display: flex; align-items: center; gap: 12px; }
+    .toggle {
+      width: 44px; height: 24px; background: #3f3f46; border-radius: 12px;
+      cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.15s;
+    }
+    .toggle.on { background: #6366f1; }
+    .toggle-knob {
+      position: absolute; top: 2px; left: 2px; width: 20px; height: 20px;
+      background: white; border-radius: 50%; transition: transform 0.15s;
+    }
+    .toggle.on .toggle-knob { transform: translateX(20px); }
+    .section { margin-bottom: 24px; }
+    .version { font-size: 12px; color: #52525b; }
+  </style>
+</head>
+<body>
+  <h1>⚙️ Settings</h1>
+  <p class="shortcut-hint">Open with <kbd id="shortcutKey">Cmd+,</kbd></p>
+
+  <div class="section">
+    <label>Stream URL</label>
+    <input type="text" id="streamUrl" placeholder="https://pstream.net" />
+    <div class="presets">
+      <div class="preset" onclick="setPreset('https://pstream.net')">pstream.net</div>
+      <div class="preset" onclick="setPreset('http://localhost:4173')">localhost</div>
+    </div>
+    <p class="hint">The P-Stream instance to load. Click a preset or type any URL.</p>
+    <div class="btn-row">
+      <button id="saveBtn">Save & Reload</button>
+      <button class="secondary" id="resetBtn">Reset to default</button>
+    </div>
+    <p class="status" id="urlStatus"></p>
+  </div>
+
+  <hr />
+
+  <div class="section">
+    <label>Discord Rich Presence</label>
+    <div class="toggle-row">
+      <div class="toggle" id="rpcToggle"><div class="toggle-knob"></div></div>
+      <span style="font-size:14px; color:#a1a1aa;">Show what I'm watching on Discord</span>
+    </div>
+    <p class="status" id="rpcStatus"></p>
+  </div>
+
+  <hr />
+
+  <p class="version" id="version">P-Stream</p>
+
+  <script>
+    const isMac = navigator.platform.includes('Mac');
+    const isWin = navigator.platform.includes('Win');
+    document.getElementById('shortcutKey').textContent =
+      isMac ? 'Cmd+,' : isWin ? 'Ctrl+,' : 'Ctrl+,';
+
+    let rpcEnabled = true;
+
+    function setPreset(url) {
+      document.getElementById('streamUrl').value = url;
+      document.getElementById('streamUrl').focus();
+    }
+
+    function updateToggle() {
+      const t = document.getElementById('rpcToggle');
+      rpcEnabled ? t.classList.add('on') : t.classList.remove('on');
+    }
+
+    async function init() {
+      try {
+        const url = await window.settings.getStreamUrl();
+        document.getElementById('streamUrl').value = url || 'https://pstream.net';
+      } catch(e) {
+        document.getElementById('urlStatus').className = 'status error';
+        document.getElementById('urlStatus').textContent = 'Error: ' + e.message;
+      }
+      try {
+        rpcEnabled = await window.settings.getDiscordRPCEnabled();
+        updateToggle();
+      } catch(e) {}
+      try {
+        const v = await window.settings.getVersion();
+        document.getElementById('version').textContent = 'P-Stream v' + v;
+      } catch(e) {}
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const url = document.getElementById('streamUrl').value.trim();
+      const status = document.getElementById('urlStatus');
+      if (!url) { status.className = 'status error'; status.textContent = 'URL cannot be empty'; return; }
+      status.className = 'status'; status.textContent = 'Saving...';
+      try {
+        await window.settings.setStreamUrl(url);
+        status.textContent = '✓ Saved! Loading...';
+        setTimeout(() => { status.textContent = ''; }, 3000);
+      } catch(e) {
+        status.className = 'status error';
+        status.textContent = 'Error: ' + e.message;
+      }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+      const url = 'https://pstream.net';
+      document.getElementById('streamUrl').value = url;
+      try {
+        await window.settings.setStreamUrl(url);
+        document.getElementById('urlStatus').className = 'status';
+        document.getElementById('urlStatus').textContent = '✓ Reset to pstream.net';
+        setTimeout(() => { document.getElementById('urlStatus').textContent = ''; }, 2000);
+      } catch(e) {}
+    });
+
+    document.getElementById('rpcToggle').addEventListener('click', async () => {
+      rpcEnabled = !rpcEnabled;
+      updateToggle();
+      try {
+        await window.settings.setDiscordRPCEnabled(rpcEnabled);
+        document.getElementById('rpcStatus').className = 'status';
+        document.getElementById('rpcStatus').textContent = rpcEnabled ? '✓ Enabled' : 'Disabled';
+        setTimeout(() => { document.getElementById('rpcStatus').textContent = ''; }, 2000);
+      } catch(e) {}
+    });
+
+    // Save on Enter key
+    document.getElementById('streamUrl').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('saveBtn').click();
+    });
+
+    init();
+  </script>
+</body>
+</html>

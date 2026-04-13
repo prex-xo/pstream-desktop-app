@@ -1,0 +1,148 @@
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #1f2025;
+  color: #e7e9ee;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Ubuntu,
+    Cantarell,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  height: 100%;
+}
+
+.titlebar {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 12px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-app-region: drag;
+  background: #1f2025;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.titlebar__left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.app-icon {
+  width: 18px;
+  height: 18px;
+  display: none;
+  opacity: 1;
+  color: #8183f9;
+}
+
+.window-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #cfd3dc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 520px;
+}
+
+/* Hidden by default until platform is known (avoids flash of Windows controls on Mac/Linux) */
+.titlebar__right {
+  display: none;
+  align-items: center;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+body[data-platform='win32'] .titlebar__right,
+body[data-platform='linux'] .titlebar__right {
+  display: flex;
+}
+
+.window-btn {
+  width: 38px;
+  height: 28px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #cfd3dc;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.window-btn svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.window-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.window-btn:active {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.window-btn--close:hover {
+  background: #e81123;
+  color: #ffffff;
+}
+
+.window-btn--close:active {
+  background: #c50f1f;
+}
+
+.window-btn .icon-restore {
+  display: none;
+}
+
+.window-btn.is-maximized .icon-restore {
+  display: block;
+}
+
+.window-btn.is-maximized .icon-max {
+  display: none;
+}
+
+/* macOS: Hide custom buttons, window title, and logo, native traffic lights overlay */
+body[data-platform='darwin'] .titlebar__right {
+  display: none;
+}
+
+body[data-platform='darwin'] .window-title {
+  display: none;
+}
+
+body[data-platform='darwin'] .app-icon {
+  display: none;
+}
+
+body[data-platform='darwin'] .titlebar {
+  padding-left: 80px; /* Make room for native traffic lights */
+}
