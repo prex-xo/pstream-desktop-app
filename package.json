@@ -1,8 +1,12 @@
 {
-  "name": "pstream-local",
+  "name": "pstream",
   "productName": "P-Stream",
   "version": "1.0.0",
   "description": "P-Stream desktop app",
+  "author": {
+    "name": "pstream-desktop-app",
+    "email": "pstream@example.com"
+  },
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
