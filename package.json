@@ -49,8 +49,7 @@
       "target": [
         { "target": "AppImage", "arch": ["x64", "arm64"] }
       ],
-      "category": "AudioVideo",
-      "icon": "src/renderer/icon.png"
+      "category": "AudioVideo"
     }
   }
 }
